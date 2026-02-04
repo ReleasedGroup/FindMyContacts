@@ -1,0 +1,41 @@
+model = "gpt-5.1-codex-max"
+approval-policy="never"
+project_doc_max_bytes=256000
+web_search = true
+model_reasoning_effort = "medium"
+preferred_auth_method = "chatgpt"
+notify = [
+  "/bin/bash",
+  "/workspaces/community-pulse/codex/notify-ntfy.sh",
+  "NEW-PROJECT: Codex CLI job finished"
+]
+
+[sandbox]
+mode="danger-full-access"
+
+[shell_environment_policy]
+# inherit can be "core" (default), "all", or "none"
+inherit = "all"
+# set to true to *skip* the filter for `"*KEY*"` and `"*TOKEN*"`
+ignore_default_excludes = true
+preferred_auth_method = "chatgpt"
+
+
+[mcp_servers.microsoft_docs]
+command = "npx"
+args = ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
+startup_timeout_sec = 30
+# Optional: override the default 60s per-tool timeout
+tool_timeout_sec = 30
+
+[mcp_servers.playwright]
+command = "npx"
+args= ["-y", "@playwright/mcp@latest"]
+startup_timeout_sec = 30
+# Optional: override the default 60s per-tool timeout
+tool_timeout_sec = 360
+
+[notice]
+hide_gpt5_1_migration_prompt = true
+hide_full_access_warning = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true

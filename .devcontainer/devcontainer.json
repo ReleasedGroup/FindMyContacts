@@ -1,0 +1,38 @@
+// .devcontainer/devcontainer.json
+{
+    "name": "released-agentic-ai",
+  
+    "image": "mcr.microsoft.com/dotnet/sdk:10.0",
+  
+    "features": {
+     
+      // Node.js (current LTS)
+      "ghcr.io/devcontainers/features/node:1":   { "version": "lts" },
+  
+      // NEW → GitHub CLI (“gh”)
+      "ghcr.io/devcontainers/features/github-cli:1": {}            // installs the latest gh release :contentReference[oaicite:0]{index=0}
+    },
+  
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-dotnettools.csdevkit",
+          "github.copilot",
+          "dbaeumer.vscode-eslint",
+          "openai.chatgpt",
+          "anthropic.claude-code"
+        ]
+      }
+    },
+  
+      "remoteEnv": {
+        "CODEX_HOME":"${containerWorkspaceFolder}/codex",
+        "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+        "CLAUDE_CONFIG_DIR": "${containerWorkspaceFolder}/.claude"
+    },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "${containerWorkspaceFolder}/scripts/mcp-agentclient-linux-x64 --server-url https://master-control-program.azurewebsites.net --project-key ae8d93c1-14ae-4fd2-8da5-32fa3551e7e2"
+
+  }
+  
