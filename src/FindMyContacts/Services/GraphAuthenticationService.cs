@@ -98,7 +98,7 @@ public class GraphAuthenticationService : IGraphAuthenticationService
             TenantId = _config.TenantId,
             ClientId = _config.ClientId,
             AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
-            DeviceCodeCallback = context =>
+            DeviceCodeCallback = (context, cancellationToken) =>
             {
                 Console.WriteLine();
                 Console.WriteLine(context.Message);

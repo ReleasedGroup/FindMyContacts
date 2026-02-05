@@ -141,7 +141,8 @@ public partial class SignatureParser : ISignatureParser
             var phone = NormalizePhoneNumber(match.Value);
 
             // Check if it's labeled as mobile/cell
-            var precedingText = text[..match.Index].TakeLast(50).ToString();
+            var startIndex = Math.Max(0, match.Index - 50);
+            var precedingText = text[startIndex..match.Index];
             if (IsMobileLabel(precedingText))
             {
                 data.MobilePhone ??= phone;
