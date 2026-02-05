@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Identity;
 using FindMyContacts.Configuration;
 using Microsoft.Extensions.Logging;

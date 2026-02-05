@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using FindMyContacts.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
+using Contact = FindMyContacts.Models.Contact;
 
 namespace FindMyContacts.Services;
 

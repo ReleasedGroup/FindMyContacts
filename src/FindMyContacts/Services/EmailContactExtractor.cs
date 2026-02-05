@@ -3,6 +3,7 @@ using FindMyContacts.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Contact = FindMyContacts.Models.Contact;
 
 namespace FindMyContacts.Services;
 
