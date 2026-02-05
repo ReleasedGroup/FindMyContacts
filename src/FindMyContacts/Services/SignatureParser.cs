@@ -140,10 +140,10 @@ public partial class SignatureParser : ISignatureParser
         {
             var phone = NormalizePhoneNumber(match.Value);
 
-            // Check if it's labeled as mobile/cell
+            // Check if it's labeled as mobile/cell (in the match itself or preceding text)
             var startIndex = Math.Max(0, match.Index - 50);
             var precedingText = text[startIndex..match.Index];
-            if (IsMobileLabel(precedingText))
+            if (IsMobileLabel(precedingText) || IsMobileLabel(match.Value))
             {
                 data.MobilePhone ??= phone;
             }
@@ -159,8 +159,8 @@ public partial class SignatureParser : ISignatureParser
         var lower = text.ToLowerInvariant();
         return lower.Contains("mobile") ||
                lower.Contains("cell") ||
-               lower.Contains("mob:") ||
-               lower.Contains("m:");
+               lower.StartsWith("mob:") ||
+               lower.StartsWith("m:");
     }
 
     private static string NormalizePhoneNumber(string phone)
