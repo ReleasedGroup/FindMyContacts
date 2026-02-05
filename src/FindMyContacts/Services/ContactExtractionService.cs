@@ -40,83 +40,95 @@ public class ContactExtractionService : IContactExtractionService
 
         _logger.LogInformation("Starting contact extraction...");
 
-        try
+        // Extract from inbox
+        if (options.IncludeInbox)
         {
-            // Extract from inbox
-            if (options.IncludeInbox)
+            await ExtractWithErrorHandling("inbox", result, async () =>
             {
-                _logger.LogInformation("Extracting contacts from inbox...");
                 await foreach (var contact in _emailExtractor.ExtractFromInboxAsync(options, cancellationToken))
                 {
                     _aggregator.AddContact(contact);
                     result.Statistics.TotalEmailsProcessed++;
                 }
-            }
+            });
+        }
 
-            // Extract from sent items
-            if (options.IncludeSentItems)
+        // Extract from sent items
+        if (options.IncludeSentItems)
+        {
+            await ExtractWithErrorHandling("sent items", result, async () =>
             {
-                _logger.LogInformation("Extracting contacts from sent items...");
                 await foreach (var contact in _emailExtractor.ExtractFromSentItemsAsync(options, cancellationToken))
                 {
                     _aggregator.AddContact(contact);
                 }
-            }
+            });
+        }
 
-            // Extract from calendar events
-            _logger.LogInformation("Extracting contacts from calendar events...");
+        // Extract from calendar events
+        await ExtractWithErrorHandling("calendar events", result, async () =>
+        {
             await foreach (var contact in _meetingExtractor.ExtractFromEventsAsync(options, cancellationToken))
             {
                 _aggregator.AddContact(contact);
                 result.Statistics.TotalMeetingsProcessed++;
             }
+        });
 
-            // Extract from Outlook personal contacts
-            if (options.IncludeOutlookContacts)
+        // Extract from Outlook personal contacts
+        if (options.IncludeOutlookContacts)
+        {
+            await ExtractWithErrorHandling("Outlook contacts", result, async () =>
             {
-                _logger.LogInformation("Extracting Outlook personal contacts...");
                 await foreach (var contact in _outlookExtractor.ExtractContactsAsync(options, cancellationToken))
                 {
                     _aggregator.AddContact(contact);
                     result.Statistics.TotalOutlookContactsProcessed++;
                 }
-            }
+            });
+        }
 
-            // Extract from Global Address List
-            if (options.IncludeGal)
+        // Extract from Global Address List
+        if (options.IncludeGal)
+        {
+            await ExtractWithErrorHandling("Global Address List", result, async () =>
             {
-                _logger.LogInformation("Extracting contacts from Global Address List...");
                 await foreach (var contact in _galExtractor.ExtractContactsAsync(options, cancellationToken))
                 {
                     _aggregator.AddContact(contact);
                     result.Statistics.TotalGalContactsProcessed++;
                 }
-            }
+            });
+        }
 
-            // Get deduplicated contacts
-            result.Contacts = _aggregator.GetDeduplicatedContacts().ToList();
-            result.Statistics.TotalContactsFound = _aggregator.TotalContactsAdded;
-            result.Statistics.UniqueContactsAfterDeduplication = _aggregator.UniqueContactCount;
+        // Always calculate final statistics
+        result.Contacts = _aggregator.GetDeduplicatedContacts().ToList();
+        result.Statistics.TotalContactsFound = _aggregator.TotalContactsAdded;
+        result.Statistics.UniqueContactsAfterDeduplication = _aggregator.UniqueContactCount;
+        CalculateStatistics(result);
 
-            // Calculate enrichment statistics
-            CalculateStatistics(result);
+        result.ExtractionCompletedUtc = DateTime.UtcNow;
 
-            _logger.LogInformation(
-                "Extraction complete. Found {Total} contacts, {Unique} unique after deduplication",
-                result.Statistics.TotalContactsFound,
-                result.Statistics.UniqueContactsAfterDeduplication);
+        _logger.LogInformation(
+            "Extraction complete. Found {Total} contacts, {Unique} unique after deduplication",
+            result.Statistics.TotalContactsFound,
+            result.Statistics.UniqueContactsAfterDeduplication);
+
+        return result;
+    }
+
+    private async Task ExtractWithErrorHandling(string source, ExtractionResult result, Func<Task> extractAction)
+    {
+        try
+        {
+            _logger.LogInformation("Extracting contacts from {Source}...", source);
+            await extractAction();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during contact extraction");
-            result.Errors.Add(ex.Message);
+            _logger.LogError(ex, "Error extracting from {Source}", source);
+            result.Errors.Add($"Error extracting from {source}: {ex.Message}");
         }
-        finally
-        {
-            result.ExtractionCompletedUtc = DateTime.UtcNow;
-        }
-
-        return result;
     }
 
     private static void CalculateStatistics(ExtractionResult result)

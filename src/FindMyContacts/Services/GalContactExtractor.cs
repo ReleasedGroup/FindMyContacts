@@ -40,7 +40,7 @@ public class GalContactExtractor : IGalContactExtractor
             requestConfig.QueryParameters.Top = 100;
             requestConfig.QueryParameters.Select =
             [
-                "id", "displayName", "givenName", "surname", "emailAddresses",
+                "id", "displayName", "givenName", "surname", "scoredEmailAddresses",
                 "companyName", "jobTitle", "department", "officeLocation",
                 "phones", "userPrincipalName"
             ];
