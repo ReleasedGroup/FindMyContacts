@@ -61,5 +61,7 @@ public enum ContactSource
     EmailCc = 4,
     MeetingOrganizer = 8,
     MeetingAttendee = 16,
-    MeetingOptional = 32
+    MeetingOptional = 32,
+    OutlookContact = 64,
+    GlobalAddressList = 128
 }

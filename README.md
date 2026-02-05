@@ -1,11 +1,14 @@
 # FindMyContacts
 
-A .NET 10 console application that extracts contacts from your Office 365 mailbox and calendar, creates a deduplicated list, and enriches contacts with information from email signatures.
+A .NET 10 console application that extracts contacts from your Office 365 mailbox, calendar, personal contacts, and Global Address List (GAL). Creates a deduplicated list enriched with information from email signatures.
 
 ## Features
 
 - **Email Contact Extraction**: Extracts contacts from inbox (senders) and sent items (recipients)
 - **Meeting Attendee Extraction**: Extracts organizers and attendees from calendar events
+- **Outlook Personal Contacts**: Imports all contacts from your Outlook contacts folder
+- **Global Address List (GAL)**: Extracts contacts from your organization's directory
+- **Directory Users**: Optionally includes all users from Azure AD (requires admin consent)
 - **Signature Parsing**: Enriches contacts with company, job title, phone numbers, and URLs from email signatures
 - **Deduplication**: Merges duplicate contacts based on email address, combining data from multiple sources
 - **Multiple Output Formats**: JSON, CSV, and vCard export options
@@ -18,6 +21,9 @@ A .NET 10 console application that extracts contacts from your Office 365 mailbo
   - `User.Read`
   - `Mail.Read`
   - `Calendars.Read`
+  - `Contacts.Read` (for Outlook personal contacts)
+  - `People.Read` (for GAL access)
+  - `User.ReadBasic.All` (optional, for full directory access)
 
 ## Installation
 
@@ -46,6 +52,9 @@ dotnet build
      - `User.Read`
      - `Mail.Read`
      - `Calendars.Read`
+     - `Contacts.Read`
+     - `People.Read`
+     - `User.ReadBasic.All` (optional, requires admin consent)
 8. Grant admin consent if required by your organization
 
 ## Configuration
