@@ -34,7 +34,7 @@ public class Program
             var extractionService = host.Services.GetRequiredService<IContactExtractionService>();
             var outputFormatter = host.Services.GetRequiredService<IOutputFormatter>();
 
-            ExtractionResult result;
+            ExtractionResult? result = null;
 
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Dots)
@@ -47,9 +47,11 @@ public class Program
                     await outputFormatter.WriteOutputAsync(result, options);
                 });
 
-            // Re-run extraction to get result (Status doesn't return value)
-            result = await extractionService.ExtractContactsAsync(options);
-            await outputFormatter.WriteOutputAsync(result, options);
+            if (result == null)
+            {
+                AnsiConsole.MarkupLine("[red]Extraction failed to produce results.[/]");
+                return 1;
+            }
 
             PrintSummary(result);
 
