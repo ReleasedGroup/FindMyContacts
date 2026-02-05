@@ -88,7 +88,8 @@ public class GalContactExtractor : IGalContactExtractor
         // Also try to get users from directory if we have permissions
         if (options.IncludeDirectoryUsers && processedCount < maxContacts)
         {
-            await foreach (var contact in ExtractDirectoryUsersAsync(options, currentUserEmail, maxContacts - processedCount, cancellationToken))
+            var directoryContacts = await ExtractDirectoryUsersAsync(options, currentUserEmail, maxContacts - processedCount, cancellationToken);
+            foreach (var contact in directoryContacts)
             {
                 yield return contact;
                 processedCount++;
@@ -98,17 +99,16 @@ public class GalContactExtractor : IGalContactExtractor
         _logger.LogInformation("Processed {Count} GAL contacts", processedCount);
     }
 
-    private async IAsyncEnumerable<Contact> ExtractDirectoryUsersAsync(
+    private async Task<List<Contact>> ExtractDirectoryUsersAsync(
         Models.ExtractionOptions options,
         string currentUserEmail,
         int maxContacts,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
+        var contacts = new List<Contact>();
         var client = await _authService.GetAuthenticatedClientAsync(cancellationToken);
 
         _logger.LogInformation("Extracting directory users...");
-
-        int processedCount = 0;
 
         try
         {
@@ -126,11 +126,11 @@ public class GalContactExtractor : IGalContactExtractor
                 requestConfig.QueryParameters.Orderby = ["displayName"];
             }, cancellationToken);
 
-            while (users?.Value != null && processedCount < maxContacts)
+            while (users?.Value != null && contacts.Count < maxContacts)
             {
                 foreach (var user in users.Value)
                 {
-                    if (processedCount >= maxContacts)
+                    if (contacts.Count >= maxContacts)
                         break;
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -146,13 +146,12 @@ public class GalContactExtractor : IGalContactExtractor
                     var contact = CreateContactFromUser(user, email);
                     if (IsValidContact(contact, options))
                     {
-                        yield return contact;
-                        processedCount++;
+                        contacts.Add(contact);
                     }
                 }
 
                 // Get next page
-                if (users.OdataNextLink != null && processedCount < maxContacts)
+                if (users.OdataNextLink != null && contacts.Count < maxContacts)
                 {
                     users = await client.Users
                         .WithUrl(users.OdataNextLink)
@@ -169,6 +168,8 @@ public class GalContactExtractor : IGalContactExtractor
             _logger.LogWarning("Insufficient permissions to access directory users. " +
                 "Add User.Read.All permission to include all directory users.");
         }
+
+        return contacts;
     }
 
     private static string? GetPrimaryEmail(Person person)
