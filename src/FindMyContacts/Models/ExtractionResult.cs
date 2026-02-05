@@ -21,6 +21,8 @@ public class ExtractionStatistics
 {
     public int TotalEmailsProcessed { get; set; }
     public int TotalMeetingsProcessed { get; set; }
+    public int TotalOutlookContactsProcessed { get; set; }
+    public int TotalGalContactsProcessed { get; set; }
     public int TotalContactsFound { get; set; }
     public int UniqueContactsAfterDeduplication { get; set; }
     public int ContactsEnriched { get; set; }

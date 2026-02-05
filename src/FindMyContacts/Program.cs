@@ -132,6 +132,28 @@ public class Program
                     options.EnableSignatureExtraction = false;
                     break;
 
+                case "--no-outlook-contacts":
+                    options.IncludeOutlookContacts = false;
+                    break;
+
+                case "--no-gal":
+                    options.IncludeGal = false;
+                    break;
+
+                case "--no-directory-users":
+                    options.IncludeDirectoryUsers = false;
+                    break;
+
+                case "--max-outlook-contacts":
+                    if (i + 1 < args.Length && int.TryParse(args[++i], out var maxOutlook))
+                        options.MaxOutlookContacts = maxOutlook;
+                    break;
+
+                case "--max-gal-contacts":
+                    if (i + 1 < args.Length && int.TryParse(args[++i], out var maxGal))
+                        options.MaxGalContacts = maxGal;
+                    break;
+
                 case "--exclude-domain":
                     if (i + 1 < args.Length)
                         options.ExcludedDomains.Add(args[++i]);
@@ -152,9 +174,9 @@ public class Program
             """
             [bold]Office 365 Contact Extractor[/]
 
-            Extracts contacts from your Office 365 mailbox and calendar,
-            creates a deduplicated list, and enriches contacts with
-            information from email signatures.
+            Extracts contacts from your Office 365 mailbox, calendar,
+            personal contacts, and Global Address List (GAL). Creates
+            a deduplicated list enriched with email signature data.
 
             [bold yellow]Usage:[/]
               FindMyContacts [options]
@@ -170,6 +192,11 @@ public class Program
               --no-sent               Skip sent items folder
               --no-cc                 Skip CC recipients
               --no-signatures         Skip signature parsing
+              --no-outlook-contacts   Skip Outlook personal contacts
+              --no-gal                Skip Global Address List
+              --no-directory-users    Skip directory users (requires User.ReadBasic.All)
+              --max-outlook-contacts  Maximum Outlook contacts (default: unlimited)
+              --max-gal-contacts      Maximum GAL contacts (default: unlimited)
               --exclude-domain <d>    Exclude additional domain pattern
 
             [bold yellow]Authentication:[/]
@@ -177,9 +204,14 @@ public class Program
               - GRAPH_TENANT_ID       Azure AD tenant ID (default: common)
               - GRAPH_CLIENT_ID       Azure AD application (client) ID
 
+            [bold yellow]Required Permissions:[/]
+              User.Read, Mail.Read, Calendars.Read, Contacts.Read,
+              People.Read, User.ReadBasic.All (for directory users)
+
             [bold yellow]Examples:[/]
               FindMyContacts --format csv -o contacts.csv
               FindMyContacts --days 90 --max-emails 500
+              FindMyContacts --no-gal --no-outlook-contacts
               FindMyContacts -f vcard -o contacts.vcf
             """))
         {
@@ -202,6 +234,10 @@ public class Program
 
         table.AddRow("Total contacts found", result.Statistics.TotalContactsFound.ToString("N0"));
         table.AddRow("Unique contacts", result.Statistics.UniqueContactsAfterDeduplication.ToString("N0"));
+        table.AddRow("From emails", result.Statistics.TotalEmailsProcessed.ToString("N0"));
+        table.AddRow("From meetings", result.Statistics.TotalMeetingsProcessed.ToString("N0"));
+        table.AddRow("From Outlook contacts", result.Statistics.TotalOutlookContactsProcessed.ToString("N0"));
+        table.AddRow("From GAL", result.Statistics.TotalGalContactsProcessed.ToString("N0"));
         table.AddRow("Contacts with company", result.Statistics.ContactsWithCompany.ToString("N0"));
         table.AddRow("Contacts with job title", result.Statistics.ContactsWithJobTitle.ToString("N0"));
         table.AddRow("Contacts with phone", result.Statistics.ContactsWithPhone.ToString("N0"));
@@ -269,6 +305,8 @@ public class Program
                 services.AddSingleton<IContactAggregator, ContactAggregator>();
                 services.AddTransient<IEmailContactExtractor, EmailContactExtractor>();
                 services.AddTransient<IMeetingContactExtractor, MeetingContactExtractor>();
+                services.AddTransient<IOutlookContactExtractor, OutlookContactExtractor>();
+                services.AddTransient<IGalContactExtractor, GalContactExtractor>();
                 services.AddTransient<IContactExtractionService, ContactExtractionService>();
                 services.AddTransient<IOutputFormatter, OutputFormatter>();
             })

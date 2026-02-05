@@ -10,17 +10,23 @@ public class ContactExtractionService : IContactExtractionService
 {
     private readonly IEmailContactExtractor _emailExtractor;
     private readonly IMeetingContactExtractor _meetingExtractor;
+    private readonly IOutlookContactExtractor _outlookExtractor;
+    private readonly IGalContactExtractor _galExtractor;
     private readonly IContactAggregator _aggregator;
     private readonly ILogger<ContactExtractionService> _logger;
 
     public ContactExtractionService(
         IEmailContactExtractor emailExtractor,
         IMeetingContactExtractor meetingExtractor,
+        IOutlookContactExtractor outlookExtractor,
+        IGalContactExtractor galExtractor,
         IContactAggregator aggregator,
         ILogger<ContactExtractionService> logger)
     {
         _emailExtractor = emailExtractor;
         _meetingExtractor = meetingExtractor;
+        _outlookExtractor = outlookExtractor;
+        _galExtractor = galExtractor;
         _aggregator = aggregator;
         _logger = logger;
     }
@@ -63,6 +69,28 @@ public class ContactExtractionService : IContactExtractionService
             {
                 _aggregator.AddContact(contact);
                 result.Statistics.TotalMeetingsProcessed++;
+            }
+
+            // Extract from Outlook personal contacts
+            if (options.IncludeOutlookContacts)
+            {
+                _logger.LogInformation("Extracting Outlook personal contacts...");
+                await foreach (var contact in _outlookExtractor.ExtractContactsAsync(options, cancellationToken))
+                {
+                    _aggregator.AddContact(contact);
+                    result.Statistics.TotalOutlookContactsProcessed++;
+                }
+            }
+
+            // Extract from Global Address List
+            if (options.IncludeGal)
+            {
+                _logger.LogInformation("Extracting contacts from Global Address List...");
+                await foreach (var contact in _galExtractor.ExtractContactsAsync(options, cancellationToken))
+                {
+                    _aggregator.AddContact(contact);
+                    result.Statistics.TotalGalContactsProcessed++;
+                }
             }
 
             // Get deduplicated contacts

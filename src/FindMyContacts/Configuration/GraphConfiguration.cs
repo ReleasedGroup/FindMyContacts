@@ -29,7 +29,10 @@ public class GraphConfiguration
     [
         "User.Read",
         "Mail.Read",
-        "Calendars.Read"
+        "Calendars.Read",
+        "Contacts.Read",
+        "People.Read",
+        "User.ReadBasic.All"
     ];
 
     /// <summary>

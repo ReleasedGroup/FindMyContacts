@@ -46,6 +46,31 @@ public class ExtractionOptions
     public bool EnableSignatureExtraction { get; set; } = true;
 
     /// <summary>
+    /// Include Outlook personal contacts
+    /// </summary>
+    public bool IncludeOutlookContacts { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of Outlook contacts to process (0 = unlimited)
+    /// </summary>
+    public int MaxOutlookContacts { get; set; } = 0;
+
+    /// <summary>
+    /// Include contacts from the Global Address List (GAL)
+    /// </summary>
+    public bool IncludeGal { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of GAL contacts to process (0 = unlimited)
+    /// </summary>
+    public int MaxGalContacts { get; set; } = 0;
+
+    /// <summary>
+    /// Include all directory users (requires User.Read.All permission)
+    /// </summary>
+    public bool IncludeDirectoryUsers { get; set; } = true;
+
+    /// <summary>
     /// Exclude contacts from specific domains (e.g., noreply domains)
     /// </summary>
     public List<string> ExcludedDomains { get; set; } =
