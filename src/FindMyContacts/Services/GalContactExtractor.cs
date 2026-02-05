@@ -123,7 +123,6 @@ public class GalContactExtractor : IGalContactExtractor
                 ];
                 // Filter to only get users with email addresses
                 requestConfig.QueryParameters.Filter = "mail ne null";
-                requestConfig.QueryParameters.Orderby = ["displayName"];
             }, cancellationToken);
 
             while (users?.Value != null && contacts.Count < maxContacts)
