@@ -98,8 +98,11 @@ public class SignatureParserTests
     public async Task ParseSignatureAsync_WithMobilePhone_ExtractsSeparately()
     {
         var body = """
-            Best,
+            Hi there,
 
+            Thanks for reaching out about the project.
+
+            Best regards,
             Sarah Connor
             Phone: 555-111-2222
             Mobile: 555-333-4444
@@ -136,8 +139,11 @@ public class SignatureParserTests
         var htmlBody = """
             <html>
             <body>
-            <p>--</p>
+            <p>Thanks for your message!</p>
+            <p>I'll get back to you soon.</p>
+            <p>Best regards,</p>
             <p>John Doe</p>
+            <p>Senior Developer</p>
             <p><a href="https://twitter.com/johndoe">Twitter</a></p>
             <p><a href="https://acmecorp.com">Website</a></p>
             </body>
